@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from mytig.config import baseUrl
 from rest_framework.exceptions import NotFound
 from mytig.models import ProduitStock
-from mytig.serializers import ProduitStockSerializer
+from mytig.serializers import ProduitStockSerializer,ProduitTransactionSerializer
 # Create your views here.
 
 class RedirectionListeDeProduits(APIView):
@@ -38,7 +38,7 @@ class RedirectionDetailProduit(APIView):
 
 
 class RedirectionIncrementStock(APIView):
-    def get(self, request, pk,number, format=None):
+    def get(self, request, pk,number, prix,format=None):
         res = []
         try:
             for prod in ProduitStock.objects.all():
@@ -46,9 +46,12 @@ class RedirectionIncrementStock(APIView):
                 if(serializer.data['tigID'] == pk):
                     ProduitStock.objects.filter(tigID=pk).delete()
                     val = serializer.data['inStock'] + number
+                    serializerPrix = ProduitTransactionSerializer(data={'tigID':str(pk),'transactionPrice':-prix,'quantite':number})
                     serializer = ProduitStockSerializer(data={'tigID': str(pk), 'inStock': val})
                     if serializer.is_valid():
                         serializer.save()
+                    if serializerPrix.is_valid():
+                        serializerPrix.save()
                     break
 
             response = requests.get(baseUrl + 'product/' + str(pk) + '/')
@@ -59,7 +62,7 @@ class RedirectionIncrementStock(APIView):
             raise Http404
 
 class RedirectionDecrementStock(APIView):
-    def get(self, request, pk,number, format=None):
+    def get(self, request, pk,number,prix, format=None):
         res = []
         try:
             for prod in ProduitStock.objects.all():
@@ -71,8 +74,12 @@ class RedirectionDecrementStock(APIView):
                     else:
                         ProduitStock.objects.filter(tigID=pk).delete()
                         serializer = ProduitStockSerializer(data={'tigID': str(pk), 'inStock': val})
+                        serializerPrix = ProduitTransactionSerializer(data={'tigID': str(pk), 'transactionPrice': prix, 'quantite': number})
                         if serializer.is_valid():
                             serializer.save()
+
+                        if serializerPrix.is_valid():
+                            serializerPrix.save()
                     break
 
             response = requests.get(baseUrl + 'product/' + str(pk) + '/')
