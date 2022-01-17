@@ -35,7 +35,7 @@ class ProduitInSale(models.Model):
 class ProduitTransaction(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     tigID = models.IntegerField(default=-1)
-    transactionPrice = models.FloatField(default=0)
+    transactionPrice = models.FloatField(default=0.0)
     quantite = models.IntegerField(default=-1)
 
     class Meta:

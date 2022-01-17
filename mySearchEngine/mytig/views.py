@@ -4,8 +4,8 @@ from rest_framework.response import Response
 from django.http import HttpResponse
 from mytig.config import baseUrl
 from rest_framework.exceptions import NotFound
-from mytig.models import ProduitStock
-from mytig.serializers import ProduitStockSerializer,ProduitTransactionSerializer
+from mytig.models import ProduitStock,ProduitTransaction
+from mytig.serializers import ProduitStockSerializer,ProduitTransactionSerializer,ProduitTransactionSerializer
 # Create your views here.
 
 class RedirectionListeDeProduits(APIView):
@@ -36,6 +36,22 @@ class RedirectionDetailProduit(APIView):
         except:
             raise Http404
 
+class RedirectionTransaction(APIView):
+    def get(self,request,format = None):
+        try:
+            res = []
+            for prod in ProduitTransaction.objects.all():
+                serializer = ProduitTransactionSerializer(prod)
+                jsondata = dict()
+                jsondata["pk"] = serializer.data["tigID"]
+                jsondata["price"] = serializer.data["transactionPrice"]
+                jsondata["quantite"] = serializer.data["quantite"]
+                jsondata["date"] = serializer.data["created"]
+
+                res.append(jsondata)
+            return JsonResponse(res, safe=False)
+        except:
+            raise Http404
 
 class RedirectionIncrementStock(APIView):
     def get(self, request, pk,number, prix,format=None):
@@ -108,28 +124,6 @@ class PutOnsale(APIView):
             raise Http404
 
 
-class RedirectionShipLists(APIView):
-    def get(self, request, format=None):
-        try:
-            response = requests.get(baseUrl+'shipPoints/')
-            jsondata = response.json()
-            return Response(jsondata)
-        except:
-            raise Http404
-
-class RedirectionDetailShipList(APIView):
-    def get(self, request, pk, format=None):
-        try:
-            response = requests.get(baseUrl+'shipPoint/'+str(pk)+'/')
-            jsondata = response.json()
-            return Response(jsondata)
-        except:
-            raise Http404
-#    def put(self, request, pk, format=None):
-#        NO DEFITION of put --> server will return "405 NOT ALLOWED"
-#    def delete(self, request, pk, format=None):
-#        NO DEFITION of delete --> server will return "405 NOT ALLOWED"
-
 class RedirectionPoissons(APIView):
     def get(self, request, format=None):
         try:
@@ -192,60 +186,3 @@ from mytig.models import ProduitEnPromotion,ProduitIsAvaible
 from mytig.serializers import ProduitEnPromotionSerializer,ProduitAvaibleSerializer
 from django.http import Http404
 from django.http import JsonResponse
-
-class PromoList(APIView):
-    def get(self, request, format=None):
-        res=[]
-        for prod in ProduitEnPromotion.objects.all():
-            serializer = ProduitEnPromotionSerializer(prod)
-            response = requests.get(baseUrl+'product/'+str(serializer.data['tigID'])+'/')
-            jsondata = response.json()
-            res.append(jsondata)
-        return JsonResponse(res, safe=False)
-#    def post(self, request, format=None):
-#        NO DEFITION of post --> server will return "405 NOT ALLOWED"
-
-class PromoDetail(APIView):
-    def get_object(self, pk):
-        try:
-            return ProduitEnPromotion.objects.get(pk=pk)
-        except ProduitEnPromotion.DoesNotExist:
-            raise Http404
-
-    def get(self, request, pk, format=None):
-        prod = self.get_object(pk)
-        serializer = ProduitEnPromotionSerializer(prod)
-        response = requests.get(baseUrl+'product/'+str(serializer.data['tigID'])+'/')
-        jsondata = response.json()
-        return Response(jsondata)
-
-
-class AvaibleList(APIView):
-    def get(self, request, format=None):
-        res=[]
-        for prod in ProduitIsAvaible.objects.all():
-            serializer = ProduitAvaibleSerializer(prod)
-            response = requests.get(baseUrl+'product/'+str(serializer.data['tigID'])+'/')
-            jsondata = response.json()
-            res.append(jsondata)
-        return JsonResponse(res, safe=False)
-#    def post(self, request, format=None):
-#        NO DEFITION of post --> server will return "405 NOT ALLOWED"
-
-class AvaibleDetail(APIView):
-    def get_object(self, pk):
-        try:
-            return ProduitIsAvaible.objects.get(pk=pk)
-        except ProduitIsAvaible.DoesNotExist:
-            raise Http404
-
-    def get(self, request, pk, format=None):
-        prod = self.get_object(pk)
-        serializer = ProduitAvaibleSerializer(prod)
-        response = requests.get(baseUrl+'product/'+str(serializer.data['tigID'])+'/')
-        jsondata = response.json()
-        return Response(jsondata)
-#    def put(self, request, pk, format=None):
-#        NO DEFITION of put --> server will return "405 NOT ALLOWED"
-#    def delete(self, request, pk, format=None):
-#        NO DEFITION of delete --> server will return "405 NOT ALLOWED"
