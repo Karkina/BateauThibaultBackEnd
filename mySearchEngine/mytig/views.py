@@ -97,7 +97,12 @@ class RedirectionDecrementStock(APIView):
                     else:
                         ProduitStock.objects.filter(tigID=pk).delete()
                         serializer = ProduitStockSerializer(data={'tigID': str(pk), 'inStock': val})
-                        serializerPrix = ProduitTransactionSerializer(data={'tigID': str(pk), 'transactionPrice': prix, 'quantite': number})
+                        response = requests.get(baseUrl + 'product/' + str(serializer.data['tigID']) + '/')
+                        jsondata = response.json()
+                        if (jsondata['category'] == 0): typeSerialize = "poissons"
+                        if (jsondata['category'] == 1): typeSerialize = "Crustaces"
+                        if (jsondata['category'] == 2): typeSerialize = "Fruit de mer"
+                        serializerPrix = ProduitTransactionSerializer(data={'tigID': str(pk),'type':typeSerialize, 'transactionPrice': prix, 'quantite': number})
                         if serializer.is_valid():
                             serializer.save()
 
