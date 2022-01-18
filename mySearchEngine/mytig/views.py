@@ -46,6 +46,7 @@ class RedirectionTransaction(APIView):
                 jsondata["pk"] = serializer.data["tigID"]
                 jsondata["price"] = serializer.data["transactionPrice"]
                 jsondata["quantite"] = serializer.data["quantite"]
+                jsondata["type"] =serializer.data["type"]
                 jsondata["date"] = serializer.data["created"]
 
                 res.append(jsondata)
@@ -62,7 +63,13 @@ class RedirectionIncrementStock(APIView):
                 if(serializer.data['tigID'] == pk):
                     ProduitStock.objects.filter(tigID=pk).delete()
                     val = serializer.data['inStock'] + number
-                    serializerPrix = ProduitTransactionSerializer(data={'tigID':str(pk),'transactionPrice':-prix,'quantite':number})
+                    response = requests.get(baseUrl + 'product/' + str(serializer.data['tigID']) + '/')
+                    jsondata = response.json()
+                    if(jsondata['category']==0) : typeSerialize = "poissons"
+                    if (jsondata['category'] == 1): typeSerialize = "Crustaces"
+                    if (jsondata['category'] == 2): typeSerialize = "Fruit de mer"
+
+                    serializerPrix = ProduitTransactionSerializer(data={'tigID':str(pk),'type':typeSerialize,'transactionPrice':-prix,'quantite':number})
                     serializer = ProduitStockSerializer(data={'tigID': str(pk), 'inStock': val})
                     if serializer.is_valid():
                         serializer.save()

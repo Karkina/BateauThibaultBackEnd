@@ -19,4 +19,4 @@ class ProduitStockSerializer(ModelSerializer):
 class ProduitTransactionSerializer(ModelSerializer):
     class Meta:
         model = ProduitTransaction
-        fields = ('created','tigID','quantite','transactionPrice')
+        fields = ('created','type','tigID','quantite','transactionPrice')

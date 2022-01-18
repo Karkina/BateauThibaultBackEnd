@@ -37,6 +37,7 @@ class ProduitTransaction(models.Model):
     tigID = models.IntegerField(default=-1)
     transactionPrice = models.FloatField(default=0.0)
     quantite = models.IntegerField(default=-1)
+    type = models.CharField(default="mer",max_length=20)
 
     class Meta:
         ordering = ('tigID',)
