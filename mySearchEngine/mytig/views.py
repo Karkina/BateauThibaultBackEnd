@@ -61,7 +61,7 @@ class RedirectionIncrementStock(APIView):
             for prod in ProduitStock.objects.all():
                 serializer = ProduitStockSerializer(prod)
                 if(serializer.data['tigID'] == pk):
-                    ProduitStock.objects.filter(tigID=pk).delete()
+
                     val = serializer.data['inStock'] + number
                     response = requests.get(baseUrl + 'product/' + str(serializer.data['tigID']) + '/')
                     jsondata = response.json()
@@ -72,6 +72,7 @@ class RedirectionIncrementStock(APIView):
                     serializerPrix = ProduitTransactionSerializer(data={'tigID':str(pk),'type':typeSerialize,'transactionPrice':-prix,'quantite':number})
                     serializer = ProduitStockSerializer(data={'tigID': str(pk), 'inStock': val})
                     if serializer.is_valid():
+                        ProduitStock.objects.filter(tigID=pk).delete()
                         serializer.save()
                     if serializerPrix.is_valid():
                         serializerPrix.save()
@@ -91,19 +92,19 @@ class RedirectionDecrementStock(APIView):
             for prod in ProduitStock.objects.all():
                 serializer = ProduitStockSerializer(prod)
                 if(serializer.data['tigID'] == pk):
-                    val = serializer.data['inStock'] - number
-                    if(val <0):
+                    val = int(serializer.data['inStock'] - number)
+                    if(val <=0):
                         raise NotFound('Plus de stock')
                     else:
-                        ProduitStock.objects.filter(tigID=pk).delete()
-                        serializer = ProduitStockSerializer(data={'tigID': str(pk), 'inStock': val})
                         response = requests.get(baseUrl + 'product/' + str(serializer.data['tigID']) + '/')
                         jsondata = response.json()
                         if (jsondata['category'] == 0): typeSerialize = "poissons"
                         if (jsondata['category'] == 1): typeSerialize = "Crustaces"
                         if (jsondata['category'] == 2): typeSerialize = "Fruit de mer"
                         serializerPrix = ProduitTransactionSerializer(data={'tigID': str(pk),'type':typeSerialize, 'transactionPrice': prix, 'quantite': number})
+                        serializer = ProduitStockSerializer(data={'tigID': str(pk), 'inStock': val})
                         if serializer.is_valid():
+                            ProduitStock.objects.filter(tigID=pk).delete()
                             serializer.save()
 
                         if serializerPrix.is_valid():
