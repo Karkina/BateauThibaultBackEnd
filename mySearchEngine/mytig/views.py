@@ -66,8 +66,8 @@ class RedirectionIncrementStock(APIView):
                     response = requests.get(baseUrl + 'product/' + str(serializer.data['tigID']) + '/')
                     jsondata = response.json()
                     if(jsondata['category']==0) : typeSerialize = "poissons"
-                    if (jsondata['category'] == 1): typeSerialize = "Crustaces"
-                    if (jsondata['category'] == 2): typeSerialize = "Fruit de mer"
+                    if (jsondata['category'] == 1): typeSerialize = "Fruit de mer"
+                    if (jsondata['category'] == 2): typeSerialize = "Crustace"
 
                     serializerPrix = ProduitTransactionSerializer(data={'tigID':str(pk),'type':typeSerialize,'transactionPrice':-prix,'quantite':number})
                     serializer = ProduitStockSerializer(data={'tigID': str(pk), 'inStock': val})
@@ -99,8 +99,8 @@ class RedirectionDecrementStock(APIView):
                         response = requests.get(baseUrl + 'product/' + str(serializer.data['tigID']) + '/')
                         jsondata = response.json()
                         if (jsondata['category'] == 0): typeSerialize = "poissons"
-                        if (jsondata['category'] == 1): typeSerialize = "Crustaces"
-                        if (jsondata['category'] == 2): typeSerialize = "Fruit de mer"
+                        if (jsondata['category'] == 1): typeSerialize = "FruitDeMer"
+                        if (jsondata['category'] == 2): typeSerialize = "Crustace"
                         serializerPrix = ProduitTransactionSerializer(data={'tigID': str(pk),'type':typeSerialize, 'transactionPrice': prix, 'quantite': number})
                         serializer = ProduitStockSerializer(data={'tigID': str(pk), 'inStock': val})
                         if serializer.is_valid():
@@ -164,7 +164,7 @@ class RedirectionCrustaces(APIView):
                 serializer = ProduitStockSerializer(prod)
                 response = requests.get(baseUrl + 'product/' + str(serializer.data['tigID']) + '/')
                 jsondata = response.json()
-                if jsondata['category']==1:
+                if jsondata['category']==2:
                     jsondata['inStock']=serializer.data['inStock']
                     jsondata['sale'] = serializer.data['sale']
                     jsondata['discount'] = serializer.data['discount']
@@ -183,7 +183,7 @@ class RedirectionFruitDeMer(APIView):
                 serializer = ProduitStockSerializer(prod)
                 response = requests.get(baseUrl + 'product/' + str(serializer.data['tigID']) + '/')
                 jsondata = response.json()
-                if jsondata['category']==2:
+                if jsondata['category']==1:
                     jsondata['inStock']=serializer.data['inStock']
                     jsondata['sale'] = serializer.data['sale']
                     jsondata['discount'] = serializer.data['discount']
