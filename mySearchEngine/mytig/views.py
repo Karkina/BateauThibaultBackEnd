@@ -10,11 +10,26 @@ from mytig.serializers import ProduitStockSerializer,ProduitTransactionSerialize
 
 class RedirectionListeDeProduits(APIView):
     def get(self, request, format=None):
-        response = requests.get(baseUrl+'products/')
-        jsondata = response.json()
-        return Response(jsondata)
+        res = []
+        try:
+            for prod in ProduitStock.objects.all():
+                serializer = ProduitStockSerializer(prod)
+                val = serializer.data['inStock']
+                sale = serializer.data['sale']
+                discount = serializer.data['discount']
+                response = requests.get(baseUrl+'product/'+str(serializer.data['tigID'])+'/')
+                jsondata = response.json()
+                jsondata['inStock']=val
+                jsondata['sale'] = sale
+                jsondata['discount'] = discount
+                res.append(jsondata)
+            return JsonResponse(res, safe=False)
+        except:
+            raise Http404
 #    def post(self, request, format=None):
 #        NO DEFITION of post --> server will return "405 NOT ALLOWED"
+
+
 
 class RedirectionDetailProduit(APIView):
     def get(self, request, pk, format=None):
@@ -69,7 +84,7 @@ class RedirectionIncrementStock(APIView):
                     if (jsondata['category'] == 1): typeSerialize = "Fruit de mer"
                     if (jsondata['category'] == 2): typeSerialize = "Crustace"
 
-                    serializerPrix = ProduitTransactionSerializer(data={'tigID':str(pk),'type':typeSerialize,'transactionPrice':-prix,'quantite':number})
+                    serializerPrix = ProduitTransactionSerializer(data={'tigID':str(pk),'type':typeSerialize,'transactionPrice':(-prix)*(1-(serializer.data['discount']/100)),'quantite':number})
                     serializer = ProduitStockSerializer(data={'tigID': str(pk), 'inStock': val})
                     if serializer.is_valid():
                         ProduitStock.objects.filter(tigID=pk).delete()
@@ -101,7 +116,7 @@ class RedirectionDecrementStock(APIView):
                         if (jsondata['category'] == 0): typeSerialize = "poissons"
                         if (jsondata['category'] == 1): typeSerialize = "FruitDeMer"
                         if (jsondata['category'] == 2): typeSerialize = "Crustace"
-                        serializerPrix = ProduitTransactionSerializer(data={'tigID': str(pk),'type':typeSerialize, 'transactionPrice': prix, 'quantite': number})
+                        serializerPrix = ProduitTransactionSerializer(data={'tigID': str(pk),'type':typeSerialize, 'transactionPrice': prix*(1-(serializer.data['discount'] / 100)), 'quantite': number})
                         serializer = ProduitStockSerializer(data={'tigID': str(pk), 'inStock': val})
                         if serializer.is_valid():
                             ProduitStock.objects.filter(tigID=pk).delete()
